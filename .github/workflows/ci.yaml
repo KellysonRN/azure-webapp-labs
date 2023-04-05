@@ -1,0 +1,52 @@
+name: CI
+on:
+  push:
+    branches: [main]  
+    paths:
+      - src/**/**"
+      - "tests/**/**"
+      - ".github/**/**"
+  
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test --no-build --verbosity normal
+
+      - name: Publish
+        run: dotnet publish src/DotNetProject.Api -c Release -o website
+
+      - name: Zip File
+        shell: pwsh  
+        run: |
+          Compress-Archive -Path '${{ env.PUBLISH_DIR }}/*' -DestinationPath './publish.zip'
+
+      - name: Upload Zip Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: publish-api-zip
+          path: ./publish.zip
+          if-no-files-found: error
+    
