@@ -1,7 +1,7 @@
 name: CI
 
 on:
-  pull_request:
+  push:
     branches: [main]  
     paths:
     - 'src/**/**'
@@ -14,7 +14,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      PUBLISH_DIR: "./mapping-bin"
+      PUBLISH_DIR: "webapp-bin"
+      APP_NAME: 'api-azurewebapplabs-dev-eastus2'
 
     steps:
       - name: Checkout
@@ -35,17 +36,12 @@ jobs:
         run: dotnet test
 
       - name: Publish
-        run: dotnet publish src/DotNetProject.Api -c Release -o website
-
-      - name: Zip File
-        shell: pwsh  
         run: |
-          Compress-Archive -Path '${{ env.PUBLISH_DIR }}/*' -DestinationPath './publish.zip'
+          dotnet publish src/DotNetProject.Api -c Release --property:PublishDir='${{ env.PUBLISH_DIR }}/myapp' 
 
-      - name: Upload Zip Artifact
-        uses: actions/upload-artifact@v3
+      - uses: azure/webapps-deploy@v2
+        name: Deploy
         with:
-          name: publish-api-zip
-          path: ./publish.zip
-          if-no-files-found: error
-    
+          app-name: ${{ env.APP_NAME }}
+          publish-profile: ${{ secrets.AZ_PUB_PROFILE }}
+          package: '${{ env.PUBLISH_DIR }}/dotnet-webapp'
