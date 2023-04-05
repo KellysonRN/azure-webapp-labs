@@ -1,17 +1,14 @@
 name: CD
+
 on:
   push:
     branches: [main]  
     paths:
-      - "src/**/**"
-      - "tests/**/**"
-      - ".github/**/**"
+    - "src/**/**"
+    - "tests/**/**"
+    - ".github/**/**"
   
   workflow_dispatch:
-
-permissions:
-  id-token: write
-  contents: read
 
 jobs:
   build:
@@ -24,36 +21,36 @@ jobs:
     environment: dev
 
     steps:
-      - name: Download a Build Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: publish-api-zip
-          path: .
-  
-      - name: Deploy web app
-        id: deploywebapp
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: ${{ env.APP_NAME }}
-          publish-profile: ${{ secrets.AZ_PUB_PROFILE }}
-          package: ./publish.zip
+    - name: Download a Build Artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: publish-api-zip
+        path: .
+
+    - name: Deploy web app
+      id: deploywebapp
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ env.APP_NAME }}
+        publish-profile: ${{ secrets.AZ_PUB_PROFILE }}
+        package: ./publish.zip
 
   acc:
-    needs: build
+    needs: dev
     runs-on: ubuntu-latest
-    environment: dev
+    environment: acc
 
     steps:
-      - name: Download a Build Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: publish-api-zip
-          path: .
-  
-      - name: Deploy web app
-        id: deploywebapp
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: ${{ env.APP_NAME }}
-          publish-profile: ${{ secrets.AZ_PUB_PROFILE }}
-          package: ./publish.zip
+    - name: Download a Build Artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: publish-api-zip
+        path: .
+
+    - name: Deploy web app
+      id: deploywebapp
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ env.APP_NAME }}
+        publish-profile: ${{ secrets.AZ_PUB_PROFILE }}
+        package: ./publish.zip

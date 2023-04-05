@@ -1,21 +1,20 @@
 name: CI
+
 on:
   push:
     branches: [main]  
     paths:
-      - "src/**/**"
-      - "tests/**/**"
-      - ".github/**/**"
-  
+    - 'src/**/**'
+    - 'tests/**/**'
+    - '.github/**/**'
+  workflow_call:  
   workflow_dispatch:
-
-permissions:
-  id-token: write
-  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      PUBLISH_DIR: "./mapping-bin"
 
     steps:
       - name: Checkout
